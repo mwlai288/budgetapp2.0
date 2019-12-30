@@ -1,17 +1,88 @@
 const express = require('express');
 const router = express.Router();
+const Money = require('../models/Money');
+const User = require('../models/User');
+const { check, validationResult } = require('express-validator');
+const auth = require('../middleware/auth');
 
-router.get('/', (req, res) => {
-	res.send('get all expenses');
+router.get('/', auth, async (req, res) => {
+	try {
+		const money = await Money.find({ user: req.user.id }).sort({ date: -1 });
+		res.json(money);
+	} catch (error) {
+		res.status(500).send('server error');
+	}
 });
-router.post('/', (req, res) => {
-	res.send('add expense');
+
+router.post('/', auth, async (req, res) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) res.status(400).json({ errors: errors.array() });
+	const { balance, expense, price, futureExpense } = req.body;
+	try {
+		const newExpense = new Money({
+			balance,
+			expense,
+			price,
+			futureExpense,
+			user: req.user.id
+		});
+		const addMoney = await newExpense.save();
+		res.json(addMoney);
+	} catch (error) {
+		console.error(error.message);
+		res.status(500).send('server error');
+	}
 });
-router.put('/:id', (req, res) => {
-	res.send('edit expense');
+
+router.put('/:id', auth, async (req, res) => {
+	const { balance, expense, price, futureExpense } = req.body;
+
+	// Build contact object
+	const expenseFields = {};
+	if (balance) expenseFields.balance = balance;
+	if (expense) expenseFields.expense = expense;
+	if (price) expenseFields.price = price;
+	if (futureExpense) expenseFields.futureExpense = futureExpense;
+
+	try {
+		let existingExpense = await Money.findById(req.params.id);
+
+		if (!existingExpense) res.status(404).json({ msg: 'Expense not found' });
+
+		// Make sure user owns contact
+		if (existingExpense.user.toString() !== req.user.id)
+			res.status(401).json({ msg: 'Not authorized' });
+
+		existingExpense = await Money.findByIdAndUpdate(
+			req.params.id,
+			{ $set: expenseFields },
+			{ new: true }
+		);
+
+		res.json(existingExpense);
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).send('Server Error');
+	}
 });
-router.delete('/:id', (req, res) => {
-	res.send('edit expense');
+
+router.delete('/:id', auth, async (req, res) => {
+	try {
+		let existingExpense = await Money.findById(req.params.id);
+
+		if (!existingExpense) res.status(404).json({ msg: 'Expense not found' });
+
+		// Make sure user owns contact
+		if (existingExpense.user.toString() !== req.user.id)
+			res.status(401).json({ msg: 'Not authorized' });
+
+		await Money.findByIdAndRemove(req.params.id);
+
+		res.json({ msg: 'Expense removed' });
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).send('Server Error');
+	}
 });
 
 module.exports = router;
