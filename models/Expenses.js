@@ -1,17 +1,13 @@
 const mongoose = require('mongoose');
 
-const MoneySchema = mongoose.Schema({
+const Expenses = mongoose.Schema({
 	user: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'users'
 	},
-	balance: {
-		type: Number,
-		required: false
-	},
 	expense: {
 		type: String,
-		required: false
+		required: true
 	},
 	futureExpense: {
 		type: String,
@@ -19,7 +15,7 @@ const MoneySchema = mongoose.Schema({
 	},
 	price: {
 		type: Number,
-		required: false
+		required: true
 	},
 	date: {
 		type: Date,
@@ -27,6 +23,6 @@ const MoneySchema = mongoose.Schema({
 	}
 });
 
-module.exports = mongoose.model('money', MoneySchema);
+module.exports = mongoose.model('expenses', Expenses);
 
 // import this in User routes file

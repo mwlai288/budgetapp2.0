@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const Money = require('../models/Money');
+const Expenses = require('../models/Expenses');
 const User = require('../models/User');
 const { check, validationResult } = require('express-validator');
 const auth = require('../middleware/auth');
 
 router.get('/', auth, async (req, res) => {
 	try {
-		const money = await Money.find({ user: req.user.id }).sort({ date: -1 });
+		const money = await Expenses.find({ user: req.user.id }).sort({ date: -1 });
 		res.json(money);
 	} catch (error) {
 		res.status(500).send('server error');
@@ -17,10 +17,9 @@ router.get('/', auth, async (req, res) => {
 router.post('/', auth, async (req, res) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) res.status(400).json({ errors: errors.array() });
-	const { balance, expense, price, futureExpense } = req.body;
+	const { expense, price, futureExpense } = req.body;
 	try {
-		const newExpense = new Money({
-			balance,
+		const newExpense = new Expenses({
 			expense,
 			price,
 			futureExpense,
@@ -35,17 +34,17 @@ router.post('/', auth, async (req, res) => {
 });
 
 router.put('/:id', auth, async (req, res) => {
-	const { balance, expense, price, futureExpense } = req.body;
+	const { /*balance, */ expense, price, futureExpense } = req.body;
 
 	// Build contact object
 	const expenseFields = {};
-	if (balance) expenseFields.balance = balance;
+
 	if (expense) expenseFields.expense = expense;
 	if (price) expenseFields.price = price;
 	if (futureExpense) expenseFields.futureExpense = futureExpense;
 
 	try {
-		let existingExpense = await Money.findById(req.params.id);
+		let existingExpense = await Expenses.findById(req.params.id);
 
 		if (!existingExpense) res.status(404).json({ msg: 'Expense not found' });
 
@@ -53,7 +52,7 @@ router.put('/:id', auth, async (req, res) => {
 		if (existingExpense.user.toString() !== req.user.id)
 			res.status(401).json({ msg: 'Not authorized' });
 
-		existingExpense = await Money.findByIdAndUpdate(
+		existingExpense = await Expenses.findByIdAndUpdate(
 			req.params.id,
 			{ $set: expenseFields },
 			{ new: true }
@@ -68,7 +67,7 @@ router.put('/:id', auth, async (req, res) => {
 
 router.delete('/:id', auth, async (req, res) => {
 	try {
-		let existingExpense = await Money.findById(req.params.id);
+		let existingExpense = await Expenses.findById(req.params.id);
 
 		if (!existingExpense) res.status(404).json({ msg: 'Expense not found' });
 
@@ -76,7 +75,7 @@ router.delete('/:id', auth, async (req, res) => {
 		if (existingExpense.user.toString() !== req.user.id)
 			res.status(401).json({ msg: 'Not authorized' });
 
-		await Money.findByIdAndRemove(req.params.id);
+		await Expenses.findByIdAndRemove(req.params.id);
 
 		res.json({ msg: 'Expense removed' });
 	} catch (err) {
