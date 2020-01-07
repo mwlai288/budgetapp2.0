@@ -2,6 +2,7 @@ import React, { useContext, useEffect } from 'react';
 import AuthContext from '../context/auth/authContext';
 import BudgetForm from './BudgetForm';
 import Expenses from './expenses/Expenses';
+import ExpenseForm from './expenses/ExpenseForm';
 
 const BudgetHome = () => {
 	const authContext = useContext(AuthContext);
@@ -13,7 +14,8 @@ const BudgetHome = () => {
 
 	return (
 		<div>
-			<BudgetForm />
+			{/* <BudgetForm /> */}
+			<ExpenseForm />
 			<Expenses />
 		</div>
 	);

@@ -6,8 +6,8 @@ const BudgetSchema = mongoose.Schema({
 		ref: 'users'
 	},
 	budget: {
-		type: Number,
-		required: false
+		type: String,
+		required: true
 	}
 });
 

@@ -1,11 +1,11 @@
 import React, { useReducer } from 'react';
 import BudgetContext from './budgetContext';
 import budgetReducer from './budgetReducer';
-import {} from '../types';
+import { ADD_BUDGET, ADD_EXPENSE, DELETE_EXPENSE } from '../types';
 
 const BudgetState = (props) => {
 	const initialState = {
-		budget: 42000,
+		budget: 3000000000,
 		costs: [
 			{
 				id: 1,
@@ -30,14 +30,30 @@ const BudgetState = (props) => {
 	// ACTIONS
 
 	// Add Budget
+	const addBudget = (budget) => {
+		dispatch({
+			type: ADD_BUDGET,
+			payload: budget
+		});
+	};
 
 	// Get Budget
 
 	// Update Budget
 
 	// Add Expense
+	const addExpense = (costs) => {
+		costs.id = 4;
+		dispatch({ type: ADD_EXPENSE, payload: costs });
+	};
 
 	// Delete Expense
+	const deleteExpense = (id) => {
+		dispatch({
+			type: DELETE_EXPENSE,
+			payload: id
+		});
+	};
 
 	// Update Expense
 
@@ -46,7 +62,10 @@ const BudgetState = (props) => {
 		<BudgetContext.Provider
 			value={{
 				budget: state.budget,
-				costs: state.costs
+				costs: state.costs,
+				addBudget,
+				addExpense,
+				deleteExpense
 			}}
 		>
 			{props.children}
